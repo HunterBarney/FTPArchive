@@ -1,0 +1,14 @@
+{
+  "hostName": "192.168.10.1",
+  "port": 21,
+  "username": "joe",
+  "password": "password123",
+  "protocol": "FTP",
+  "downloads": [
+    "testdir",
+    "dir2",
+    "file.txt",
+    "important.pdf"
+  ],
+  "outputName": "backup"
+}
