@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
+	"io"
+	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -31,16 +34,63 @@ func ConnectSFTP(profile *Profile) (*sftp.Client, error) {
 	return sftpClient, nil
 }
 
-func ProcessDownloadsSftp(sftpClient *sftp.Client, profile *Profile) {
-	for _, file := range profile.Downloads {
-		remoteFile, err := sftpClient.Stat(file)
-		if err != nil {
-			fmt.Println("Error opening remote file:", err)
-		}
-
-		test := remoteFile.IsDir()
-		fmt.Println("File: ", file)
-		fmt.Println("Is dir: ", test)
+func downloadDirectory(client *sftp.Client, remoteDir, localDir string) {
+	files, err := client.ReadDir(remoteDir)
+	if err != nil {
+		fmt.Println(err)
 	}
 
+	os.MkdirAll(localDir, 0755)
+	for _, file := range files {
+		remoteFilePath := filepath.Join(remoteDir, file.Name())
+		remoteFilePath = filepath.ToSlash(remoteFilePath)
+		localFilePath := filepath.Join(localDir, file.Name())
+
+		fmt.Println("Downloading", remoteFilePath)
+		if file.IsDir() {
+			downloadDirectory(client, remoteFilePath, localFilePath)
+		} else {
+			downloadFile(client, remoteFilePath, localFilePath)
+		}
+	}
+}
+
+// downloadFile downloads a single file from the SFTP server
+func downloadFile(client *sftp.Client, remotePath, localPath string) {
+	remoteFile, err := client.Open(remotePath)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer remoteFile.Close()
+
+	localFile, err := os.Create(localPath)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer localFile.Close()
+
+	_, err = io.Copy(localFile, remoteFile)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func ProcessDownloads(client *sftp.Client, profile *Profile) error {
+	for _, item := range profile.Downloads {
+		remotePath := item
+		localPath := filepath.Join(profile.OutputName, filepath.Base(item))
+
+		stat, err := client.Stat(remotePath)
+		if err != nil {
+			return err
+		}
+
+		if stat.IsDir() {
+			downloadDirectory(client, remotePath, localPath)
+		} else {
+			downloadFile(client, remotePath, localPath)
+		}
+	}
+
+	return nil
 }

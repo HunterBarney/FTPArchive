@@ -26,7 +26,10 @@ func main() {
 		if e != nil {
 			log.Fatal(e)
 		}
-		ProcessDownloadsSftp(client, &profile)
+		err := ProcessDownloads(client, &profile)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 	default:
 		fmt.Println("Unknown protocol")
