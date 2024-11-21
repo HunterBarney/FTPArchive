@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-func ConnectSFTP(profile *Profile) (*sftp.Client, error) {
+func connectSFTP(profile *Profile) (*sftp.Client, error) {
 	fmt.Println("Connecting to SFTP site: ", profile.HostName)
 
 	sshConfig := &ssh.ClientConfig{
@@ -75,7 +75,7 @@ func downloadFile(client *sftp.Client, remotePath, localPath string) {
 	}
 }
 
-func ProcessDownloads(client *sftp.Client, profile *Profile) error {
+func processDownloads(client *sftp.Client, profile *Profile) error {
 	for _, item := range profile.Downloads {
 		remotePath := item
 		localPath := filepath.Join(profile.OutputName, filepath.Base(item))

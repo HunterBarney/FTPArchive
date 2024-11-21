@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	profilePath := flag.String("profile", "profile.json", "The path to the profile.")
+	profilePath := flag.String("profile", "minecraft.json", "The path to the profile.")
 
 	flag.Parse()
 	fmt.Println("profilePath:", *profilePath)
@@ -22,11 +22,11 @@ func main() {
 		fmt.Println("FTP Connection")
 
 	case "SFTP":
-		client, e := ConnectSFTP(&profile)
+		client, e := connectSFTP(&profile)
 		if e != nil {
 			log.Fatal(e)
 		}
-		err := ProcessDownloads(client, &profile)
+		err := processDownloads(client, &profile)
 		if err != nil {
 			log.Fatal(err)
 		}
