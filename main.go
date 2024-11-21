@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	profilePath := flag.String("profile", "minecraft.json", "The path to the profile.")
+	profilePath := flag.String("profile", "profile.json", "The path to the profile.")
 
 	flag.Parse()
 	fmt.Println("profilePath:", *profilePath)
@@ -26,11 +26,7 @@ func main() {
 		if e != nil {
 			log.Fatal(e)
 		}
-		err := processDownloads(client, &profile)
-		if err != nil {
-			log.Fatal(err)
-		}
-
+		processDownloads(client, &profile)
 	default:
 		fmt.Println("Unknown protocol")
 	}
