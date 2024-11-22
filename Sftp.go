@@ -38,6 +38,7 @@ func downloadDirectory(client *sftp.Client, remoteDir, localDir string) error {
 	files, err := client.ReadDir(remoteDir)
 	if err != nil {
 		fmt.Println(err)
+		return err
 	}
 
 	err = os.MkdirAll(localDir, 0755)
@@ -98,22 +99,22 @@ func processDownloads(client *sftp.Client, profile *Profile) {
 		if err != nil {
 			fmt.Println("Error statting remote file: ", remotePath)
 			fmt.Println(err)
+			continue
 		}
 
-		if err == nil {
-			if stat.IsDir() {
-				err = downloadDirectory(client, remotePath, localPath)
-				if err != nil {
-					fmt.Println("Error downloading directory: ", remotePath)
-					fmt.Println(err)
-				}
-			} else {
-				err = downloadFile(client, remotePath, localPath)
-				if err != nil {
-					fmt.Println("Error downloading file: ", remotePath)
-					fmt.Println(err)
-				}
+		if stat.IsDir() {
+			err = downloadDirectory(client, remotePath, localPath)
+			if err != nil {
+				fmt.Println("Error downloading directory: ", remotePath)
+				fmt.Println(err)
+			}
+		} else {
+			err = downloadFile(client, remotePath, localPath)
+			if err != nil {
+				fmt.Println("Error downloading file: ", remotePath)
+				fmt.Println(err)
 			}
 		}
+
 	}
 }
