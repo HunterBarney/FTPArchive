@@ -22,12 +22,11 @@ func main() {
 		fmt.Println("FTP Connection")
 
 	case "SFTP":
-		client, e := ConnectSFTP(&profile)
+		client, e := connectSFTP(&profile)
 		if e != nil {
 			log.Fatal(e)
 		}
-		ProcessDownloadsSftp(client, &profile)
-
+		processDownloads(client, &profile)
 	default:
 		fmt.Println("Unknown protocol")
 	}
