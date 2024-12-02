@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"os"
+	"strings"
 )
 
 type Profile struct {
@@ -35,5 +37,22 @@ func LoadProfile(fileName string) (Profile, error) {
 		log.Fatal(err)
 	}
 
+	newFileName := FormatDateTime(profile.OutputName)
+	if IsValidPathName(newFileName) {
+		profile.OutputName = newFileName
+	} else {
+		return profile, errors.New("output name invalid")
+	}
 	return profile, nil
+}
+
+func IsValidPathName(path string) bool {
+	invalidChars := []string{"/", "<", ">", "\"", "\\", "|", "?", "*"}
+	for _, char := range invalidChars {
+		if strings.Contains(path, char) {
+			return false
+		}
+	}
+
+	return true
 }
