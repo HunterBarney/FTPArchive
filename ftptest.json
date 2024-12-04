@@ -1,0 +1,12 @@
+{
+  "hostName": "ftp.dlptest.com",
+  "port": 21,
+  "username": "dlpuser",
+  "password": "rNrKYTX9g7z3RgJRmxWuGHbeu",
+  "protocol": "FTP",
+  "downloads": [
+    "10.101.1.2_20241204-14111949_IVA.jpg",
+    "ftp"
+  ],
+  "outputName": "backup"
+}

@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	profilePath := flag.String("profile", "profile.json", "The path to the profile.")
+	profilePath := flag.String("profile", "ftptest.json", "The path to the profile.")
 
 	flag.Parse()
 	fmt.Println("profilePath:", *profilePath)
@@ -19,7 +19,14 @@ func main() {
 
 	switch profile.Protocol {
 	case "FTP":
-		fmt.Println("FTP Connection")
+		client, e := ConnectFTP(&profile)
+		if e != nil {
+			log.Fatal(e)
+		}
+		e = DisconnectFTP(client)
+		if e != nil {
+			log.Fatal(e)
+		}
 
 	case "SFTP":
 		client, e := connectSFTP(&profile)
