@@ -18,4 +18,9 @@ func TestFTPConnect(t *testing.T) {
 	if client == nil {
 		t.Fatal("Failed to create client")
 	}
+
+	e = DisconnectFTP(client)
+	if e != nil {
+		t.Fatal("Failed to disconnect: ", e)
+	}
 }
