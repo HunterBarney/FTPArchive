@@ -21,18 +21,10 @@ func ConnectFTP(profile *Profile) (*ftp.ServerConn, error) {
 		return client, err
 	}
 
+	defer client.Quit()
+
 	fmt.Println("Successfully logged in user: ", profile.Username)
 	return client, nil
-}
-
-func DisconnectFTP(client *ftp.ServerConn) error {
-	fmt.Println("Disconnecting from FTP...")
-	err := client.Quit()
-	if err != nil {
-		return err
-	}
-	fmt.Println("Successfully disconnected from FTP")
-	return nil
 }
 
 func DownloadDirectoryFTP() {
