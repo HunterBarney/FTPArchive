@@ -1,12 +1,13 @@
 {
-  "hostName": "ftp.dlptest.com",
+  "hostName": "test.rebex.net",
   "port": 21,
-  "username": "dlpuser",
-  "password": "rNrKYTX9g7z3RgJRmxWuGHbeu",
+  "username": "demo",
+  "password": "password",
   "protocol": "FTP",
   "downloads": [
-    "10.101.1.2_20241204-14111949_IVA.jpg",
-    "ftp"
+    "pub/example",
+    "pub",
+    "pub/example/imap-console-client.png"
   ],
   "outputName": "backup"
 }

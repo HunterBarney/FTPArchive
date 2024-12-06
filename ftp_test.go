@@ -4,10 +4,10 @@ import "testing"
 
 func TestFTPConnect(t *testing.T) {
 	mockClient := &Profile{
-		HostName: "ftp.dlptest.com",
+		HostName: "test.rebex.net",
 		Port:     21,
-		Username: "dlpuser",
-		Password: "rNrKYTX9g7z3RgJRmxWuGHbeu",
+		Username: "demo",
+		Password: "password",
 	}
 
 	client, e := ConnectFTP(mockClient)
