@@ -9,7 +9,7 @@ import (
 
 func ConnectFTP(profile *Profile) (*ftp.ServerConn, error) {
 	connectionString := profile.HostName + ":" + strconv.Itoa(profile.Port)
-	fmt.Print("Connecting to: ", connectionString)
+	fmt.Println("Connecting to: ", connectionString)
 	client, err := ftp.Dial(connectionString, ftp.DialWithTimeout(5*time.Second))
 	if err != nil {
 		return client, err
@@ -35,14 +35,30 @@ func DisconnectFTP(client *ftp.ServerConn) error {
 	return nil
 }
 
-func DownloadDirectoryFTP() {
-
+func DownloadDirectoryFTP(entry *ftp.Entry) error {
+	fmt.Println("Downloading directory: ", entry.Name)
+	return nil
 }
 
-func DownloadFileFTP() {
-
+func DownloadFileFTP(entry *ftp.Entry) error {
+	fmt.Println("Downloading file: ", entry.Name)
+	return nil
 }
 
-func ProcessDownloadsFTP() {
-
+func ProcessDownloadsFTP(profile *Profile, client *ftp.ServerConn) error {
+	for _, item := range profile.Downloads {
+		file, err := client.GetEntry(item)
+		if err != nil {
+			return err
+		}
+		if file.Type == ftp.EntryTypeFolder {
+			e := DownloadDirectoryFTP(file)
+			return e
+		}
+		if file.Type == ftp.EntryTypeFile {
+			e := DownloadFileFTP(file)
+			return e
+		}
+	}
+	return nil
 }

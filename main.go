@@ -23,6 +23,12 @@ func main() {
 		if e != nil {
 			log.Fatal(e)
 		}
+
+		e = ProcessDownloadsFTP(&profile, client)
+		if e != nil {
+			log.Fatal(e)
+		}
+
 		e = DisconnectFTP(client)
 		if e != nil {
 			log.Fatal(e)
