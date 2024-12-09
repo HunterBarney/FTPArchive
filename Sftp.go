@@ -34,7 +34,7 @@ func connectSFTP(profile *Profile) (*sftp.Client, error) {
 	return sftpClient, nil
 }
 
-func downloadDirectory(client *sftp.Client, remoteDir, localDir string) error {
+func downloadDirectorySFTP(client *sftp.Client, remoteDir, localDir string) error {
 	files, err := client.ReadDir(remoteDir)
 	if err != nil {
 		fmt.Println(err)
@@ -53,12 +53,12 @@ func downloadDirectory(client *sftp.Client, remoteDir, localDir string) error {
 
 		fmt.Println("Downloading", remoteFilePath)
 		if file.IsDir() {
-			err = downloadDirectory(client, remoteFilePath, localFilePath)
+			err = downloadDirectorySFTP(client, remoteFilePath, localFilePath)
 			if err != nil {
 				return err
 			}
 		} else {
-			err = downloadFile(client, remoteFilePath, localFilePath)
+			err = downloadFileSFTP(client, remoteFilePath, localFilePath)
 			if err != nil {
 				return err
 			}
@@ -67,7 +67,7 @@ func downloadDirectory(client *sftp.Client, remoteDir, localDir string) error {
 	return nil
 }
 
-func downloadFile(client *sftp.Client, remotePath, localPath string) error {
+func downloadFileSFTP(client *sftp.Client, remotePath, localPath string) error {
 	remoteFile, err := client.Open(remotePath)
 	if err != nil {
 		fmt.Println("Error opening remote file: ", remoteFile)
@@ -90,7 +90,7 @@ func downloadFile(client *sftp.Client, remotePath, localPath string) error {
 	return nil
 }
 
-func processDownloads(client *sftp.Client, profile *Profile) {
+func processDownloadsSFTP(client *sftp.Client, profile *Profile) {
 	for _, item := range profile.Downloads {
 		remotePath := item
 		localPath := filepath.Join(profile.OutputName, filepath.Base(item))
@@ -103,13 +103,13 @@ func processDownloads(client *sftp.Client, profile *Profile) {
 		}
 
 		if stat.IsDir() {
-			err = downloadDirectory(client, remotePath, localPath)
+			err = downloadDirectorySFTP(client, remotePath, localPath)
 			if err != nil {
 				fmt.Println("Error downloading directory: ", remotePath)
 				fmt.Println(err)
 			}
 		} else {
-			err = downloadFile(client, remotePath, localPath)
+			err = downloadFileSFTP(client, remotePath, localPath)
 			if err != nil {
 				fmt.Println("Error downloading file: ", remotePath)
 				fmt.Println(err)

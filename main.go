@@ -39,7 +39,7 @@ func main() {
 		if e != nil {
 			log.Fatal(e)
 		}
-		processDownloads(client, &profile)
+		processDownloadsSFTP(client, &profile)
 	default:
 		fmt.Println("Unknown protocol")
 	}
