@@ -1,0 +1,13 @@
+{
+  "hostName": "test.rebex.net",
+  "port": 21,
+  "username": "demo",
+  "password": "password",
+  "protocol": "FTP",
+  "downloads": [
+    "pub/example",
+    "pub",
+    "pub/example/imap-console-client.png"
+  ],
+  "outputName": "backup"
+}

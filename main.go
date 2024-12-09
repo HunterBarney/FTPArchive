@@ -19,7 +19,20 @@ func main() {
 
 	switch profile.Protocol {
 	case "FTP":
-		fmt.Println("FTP Connection")
+		client, e := ConnectFTP(&profile)
+		if e != nil {
+			log.Fatal(e)
+		}
+
+		e = ProcessDownloadsFTP(&profile, client)
+		if e != nil {
+			log.Fatal(e)
+		}
+
+		e = DisconnectFTP(client)
+		if e != nil {
+			log.Fatal(e)
+		}
 
 	case "SFTP":
 		client, e := connectSFTP(&profile)
