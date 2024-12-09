@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/jlaffaye/ftp"
+	"io"
+	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -35,29 +38,89 @@ func DisconnectFTP(client *ftp.ServerConn) error {
 	return nil
 }
 
-func DownloadDirectoryFTP(entry *ftp.Entry) error {
-	fmt.Println("Downloading directory: ", entry.Name)
+func DownloadDirectoryFTP(client *ftp.ServerConn, remoteDir, localDir string) error {
+	entries, err := client.List(remoteDir)
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(localDir, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range entries {
+		remotePath := filepath.Join(remoteDir, entry.Name)
+		localPath := filepath.Join(localDir, entry.Name)
+
+		if entry.Type == ftp.EntryTypeFolder {
+			err = DownloadDirectoryFTP(client, remotePath, localPath)
+			if err != nil {
+				return err
+			}
+		} else if entry.Type == ftp.EntryTypeFile {
+			err = DownloadFileFTP(client, remotePath, localPath)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	fmt.Printf("Directory downloaded successfully: %s\n", localDir)
 	return nil
 }
 
-func DownloadFileFTP(entry *ftp.Entry) error {
-	fmt.Println("Downloading file: ", entry.Name)
+func DownloadFileFTP(client *ftp.ServerConn, remotePath, localPath string) error {
+	resp, err := client.Retr(remotePath)
+	if err != nil {
+		return err
+	}
+	defer resp.Close()
+
+	err = os.MkdirAll(filepath.Dir(localPath), os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	localFile, err := os.Create(localPath)
+	if err != nil {
+		return err
+	}
+	defer localFile.Close()
+
+	_, err = io.Copy(localFile, resp)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("File downloaded successfully: %s\n", localPath)
 	return nil
 }
 
 func ProcessDownloadsFTP(profile *Profile, client *ftp.ServerConn) error {
+	e := os.MkdirAll(profile.OutputName, 0755)
+	if e != nil {
+		return e
+	}
 	for _, item := range profile.Downloads {
-		file, err := client.GetEntry(item)
-		if err != nil {
-			return err
-		}
-		if file.Type == ftp.EntryTypeFolder {
-			e := DownloadDirectoryFTP(file)
+
+		remotePath := item
+		localPath := filepath.Join(profile.OutputName, filepath.Base(item))
+		fileInfo, e := client.GetEntry(item)
+		if e != nil {
 			return e
 		}
-		if file.Type == ftp.EntryTypeFile {
-			e := DownloadFileFTP(file)
-			return e
+		if fileInfo.Type == ftp.EntryTypeFolder {
+			e := DownloadDirectoryFTP(client, remotePath, localPath)
+			if e != nil {
+
+			}
+		}
+		if fileInfo.Type == ftp.EntryTypeFile {
+
+			e := DownloadFileFTP(client, remotePath, localPath)
+			if e != nil {
+				return e
+			}
 		}
 	}
 	return nil
