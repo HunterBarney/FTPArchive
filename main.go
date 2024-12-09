@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	profilePath := flag.String("profile", "ftptest.json", "The path to the profile.")
+	profilePath := flag.String("profile", "profile.json", "The path to the profile.")
 
 	flag.Parse()
 	fmt.Println("profilePath:", *profilePath)
