@@ -37,14 +37,12 @@ func connectSFTP(profile *Profile) (*sftp.Client, error) {
 func downloadDirectorySFTP(client *sftp.Client, remoteDir, localDir string) error {
 	files, err := client.ReadDir(remoteDir)
 	if err != nil {
-		fmt.Println(err)
-		return err
+		return fmt.Errorf("error getting list of files in remote directory %s. Error %w", remoteDir, err)
 	}
 
 	err = os.MkdirAll(localDir, 0755)
 	if err != nil {
-		fmt.Println("Error creating directory: ", localDir)
-		return err
+		return fmt.Errorf("error creating directory %s: %w", localDir, err)
 	}
 	for _, file := range files {
 		remoteFilePath := filepath.Join(remoteDir, file.Name())
@@ -64,57 +62,57 @@ func downloadDirectorySFTP(client *sftp.Client, remoteDir, localDir string) erro
 			}
 		}
 	}
+	fmt.Printf("Directory downloaded successfully: %s\n", localDir)
 	return nil
 }
 
 func downloadFileSFTP(client *sftp.Client, remotePath, localPath string) error {
 	remoteFile, err := client.Open(remotePath)
 	if err != nil {
-		fmt.Println("Error opening remote file: ", remoteFile)
-		return err
+		return fmt.Errorf("unable to read remote file %s. Error %s", remotePath, err)
 	}
 	defer remoteFile.Close()
 
+	err = os.MkdirAll(filepath.Dir(localPath), os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("unable to make local directory for file %s. Error: %w", localPath, err)
+	}
+
 	localFile, err := os.Create(localPath)
 	if err != nil {
-		fmt.Println("Error creating local file: ", localFile)
-		return err
+		return fmt.Errorf("unable to create local file %s. Error: %w", localPath, err)
 	}
 	defer localFile.Close()
 
 	_, err = io.Copy(localFile, remoteFile)
 	if err != nil {
-		fmt.Println("Error downloading file: ", remoteFile)
-		return err
+		return fmt.Errorf("unable to copy data to local file %s. Error: %w", localFile.Name(), err)
 	}
 	return nil
 }
 
-func processDownloadsSFTP(client *sftp.Client, profile *Profile) {
+func processDownloadsSFTP(client *sftp.Client, profile *Profile) error {
 	for _, item := range profile.Downloads {
 		remotePath := item
 		localPath := filepath.Join(profile.OutputName, filepath.Base(item))
 
 		stat, err := client.Stat(remotePath)
 		if err != nil {
-			fmt.Println("Error statting remote file: ", remotePath)
-			fmt.Println(err)
-			continue
+			return fmt.Errorf("unable to get file info for %s. Error: %w", remotePath, err)
 		}
 
 		if stat.IsDir() {
 			err = downloadDirectorySFTP(client, remotePath, localPath)
 			if err != nil {
-				fmt.Println("Error downloading directory: ", remotePath)
-				fmt.Println(err)
+				return err
 			}
 		} else {
 			err = downloadFileSFTP(client, remotePath, localPath)
 			if err != nil {
-				fmt.Println("Error downloading file: ", remotePath)
-				fmt.Println(err)
+				return err
 			}
 		}
 
 	}
+	return nil
 }

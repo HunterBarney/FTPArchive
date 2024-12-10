@@ -41,12 +41,12 @@ func DisconnectFTP(client *ftp.ServerConn) error {
 func DownloadDirectoryFTP(client *ftp.ServerConn, remoteDir, localDir string) error {
 	entries, err := client.List(remoteDir)
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting list of files in remote directory %s. Error %w", remoteDir, err)
 	}
 
 	err = os.MkdirAll(localDir, os.ModePerm)
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating directory %s: %w", localDir, err)
 	}
 
 	for _, entry := range entries {
@@ -72,24 +72,24 @@ func DownloadDirectoryFTP(client *ftp.ServerConn, remoteDir, localDir string) er
 func DownloadFileFTP(client *ftp.ServerConn, remotePath, localPath string) error {
 	resp, err := client.Retr(remotePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to read remote file %s. Error %s", remotePath, err)
 	}
 	defer resp.Close()
 
 	err = os.MkdirAll(filepath.Dir(localPath), os.ModePerm)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to make local directory for file %s. Error: %w", localPath, err)
 	}
 
 	localFile, err := os.Create(localPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to create local file %s. Error: %w", localPath, err)
 	}
 	defer localFile.Close()
 
 	_, err = io.Copy(localFile, resp)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to copy data to local file %s. Error: %w", localFile.Name(), err)
 	}
 
 	fmt.Printf("File downloaded successfully: %s\n", localPath)
@@ -99,7 +99,7 @@ func DownloadFileFTP(client *ftp.ServerConn, remotePath, localPath string) error
 func ProcessDownloadsFTP(profile *Profile, client *ftp.ServerConn) error {
 	e := os.MkdirAll(profile.OutputName, 0755)
 	if e != nil {
-		return e
+		return fmt.Errorf("unable to make output directory for file %s. Error: %w", profile.OutputName, e)
 	}
 	for _, item := range profile.Downloads {
 
@@ -107,16 +107,15 @@ func ProcessDownloadsFTP(profile *Profile, client *ftp.ServerConn) error {
 		localPath := filepath.Join(profile.OutputName, filepath.Base(item))
 		fileInfo, e := client.GetEntry(item)
 		if e != nil {
-			return e
+			return fmt.Errorf("unable to get file info for %s. Error: %w", remotePath, e)
 		}
 		if fileInfo.Type == ftp.EntryTypeFolder {
 			e := DownloadDirectoryFTP(client, remotePath, localPath)
 			if e != nil {
-
+				return e
 			}
 		}
 		if fileInfo.Type == ftp.EntryTypeFile {
-
 			e := DownloadFileFTP(client, remotePath, localPath)
 			if e != nil {
 				return e
