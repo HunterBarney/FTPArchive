@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// ConnectFTP takes in a profile and returns an active FTP connection.
 func ConnectFTP(profile *Profile) (*ftp.ServerConn, error) {
 	connectionString := profile.HostName + ":" + strconv.Itoa(profile.Port)
 	fmt.Println("Connecting to: ", connectionString)
@@ -38,6 +39,7 @@ func DisconnectFTP(client *ftp.ServerConn) error {
 	return nil
 }
 
+// DownloadDirectoryFTP recursively downloads all files from the provided remote directory.
 func DownloadDirectoryFTP(client *ftp.ServerConn, remoteDir, localDir string) error {
 	entries, err := client.List(remoteDir)
 	if err != nil {
@@ -69,6 +71,7 @@ func DownloadDirectoryFTP(client *ftp.ServerConn, remoteDir, localDir string) er
 	return nil
 }
 
+// DownloadFileFTP downloads a single file from a remote site
 func DownloadFileFTP(client *ftp.ServerConn, remotePath, localPath string) error {
 	resp, err := client.Retr(remotePath)
 	if err != nil {
@@ -96,6 +99,7 @@ func DownloadFileFTP(client *ftp.ServerConn, remotePath, localPath string) error
 	return nil
 }
 
+// ProcessDownloadsFTP downloads all directories/files from the given profile.
 func ProcessDownloadsFTP(profile *Profile, client *ftp.ServerConn) error {
 	e := os.MkdirAll(profile.OutputName, 0755)
 	if e != nil {

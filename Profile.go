@@ -20,6 +20,7 @@ type Profile struct {
 	OutputName string   `json:"outputName"`
 }
 
+// LoadProfile reads data from a profile json file and returns a profile object.
 func LoadProfile(fileName string) (Profile, error) {
 	var profile Profile
 
@@ -46,6 +47,7 @@ func LoadProfile(fileName string) (Profile, error) {
 	return profile, nil
 }
 
+// IsValidPathName checks the provided string for invalid characters
 func IsValidPathName(path string) bool {
 	invalidChars := []string{"/", "<", ">", "\"", "\\", "|", "?", "*"}
 	for _, char := range invalidChars {

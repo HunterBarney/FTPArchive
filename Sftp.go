@@ -10,6 +10,7 @@ import (
 	"strconv"
 )
 
+// connectSFTP takes in a profile and returns an active SFTP connection.
 func connectSFTP(profile *Profile) (*sftp.Client, error) {
 	fmt.Println("Connecting to SFTP site: ", profile.HostName)
 
@@ -34,6 +35,7 @@ func connectSFTP(profile *Profile) (*sftp.Client, error) {
 	return sftpClient, nil
 }
 
+// downloadDirectorySFTP recursively downloads all files from the provided remote directory.
 func downloadDirectorySFTP(client *sftp.Client, remoteDir, localDir string) error {
 	files, err := client.ReadDir(remoteDir)
 	if err != nil {
@@ -44,9 +46,11 @@ func downloadDirectorySFTP(client *sftp.Client, remoteDir, localDir string) erro
 	if err != nil {
 		return fmt.Errorf("error creating directory %s: %w", localDir, err)
 	}
+
+	// For each item in the directory check if it is a directory or file and run the proper download function.
 	for _, file := range files {
 		remoteFilePath := filepath.Join(remoteDir, file.Name())
-		remoteFilePath = filepath.ToSlash(remoteFilePath)
+		remoteFilePath = filepath.ToSlash(remoteFilePath) // Converts to unix format as filepath.join on windows defaults to windows format.
 		localFilePath := filepath.Join(localDir, file.Name())
 
 		fmt.Println("Downloading", remoteFilePath)
@@ -66,6 +70,7 @@ func downloadDirectorySFTP(client *sftp.Client, remoteDir, localDir string) erro
 	return nil
 }
 
+// downloadFileSFTP downloads a single file from a remote site
 func downloadFileSFTP(client *sftp.Client, remotePath, localPath string) error {
 	remoteFile, err := client.Open(remotePath)
 	if err != nil {
@@ -91,6 +96,7 @@ func downloadFileSFTP(client *sftp.Client, remotePath, localPath string) error {
 	return nil
 }
 
+// processDownloadsSFTP downloads all directories/files from the given profile.
 func processDownloadsSFTP(client *sftp.Client, profile *Profile) error {
 	for _, item := range profile.Downloads {
 		remotePath := item
