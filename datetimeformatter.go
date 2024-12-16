@@ -31,8 +31,11 @@ import (
 // %mm gets replaced with the current minute
 //
 // %tt gets the current AM/PM designator
-func FormatDateTime(input string) string {
-	currentTime := time.Now()
+func FormatDateTime(input string, currentTime time.Time) string {
+	if currentTime.IsZero() {
+		currentTime = time.Now()
+	}
+
 	f := strings.NewReplacer(
 		"%dd", fmt.Sprintf("%02d", currentTime.Day()),
 		"%d", fmt.Sprintf("%d", currentTime.Day()),
@@ -66,7 +69,7 @@ func toTwelveHour(hour int) int {
 
 // getAMPM returns the proper AM/PM designator
 func getAMPM(hour int) string {
-	if hour > 12 {
+	if hour >= 12 {
 		return "PM"
 	}
 	return "AM"

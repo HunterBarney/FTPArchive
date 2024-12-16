@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 )
 
 type Profile struct {
@@ -38,7 +39,7 @@ func LoadProfile(fileName string) (Profile, error) {
 		log.Fatal(err)
 	}
 
-	newFileName := FormatDateTime(profile.OutputName)
+	newFileName := FormatDateTime(profile.OutputName, time.Now())
 	if IsValidPathName(newFileName) {
 		profile.OutputName = newFileName
 	} else {
