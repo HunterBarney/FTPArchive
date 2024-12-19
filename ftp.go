@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/jlaffaye/ftp"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -13,29 +14,29 @@ import (
 // ConnectFTP takes in a profile and returns an active FTP connection.
 func ConnectFTP(profile *Profile) (*ftp.ServerConn, error) {
 	connectionString := profile.HostName + ":" + strconv.Itoa(profile.Port)
-	fmt.Println("Connecting to: ", connectionString)
+	log.Println("Connecting to: ", connectionString)
 	client, err := ftp.Dial(connectionString, ftp.DialWithTimeout(5*time.Second))
 	if err != nil {
 		return client, err
 	}
 
-	fmt.Println("Logging in user: ", profile.Username)
+	log.Println("Logging in user: ", profile.Username)
 	err = client.Login(profile.Username, profile.Password)
 	if err != nil {
 		return client, err
 	}
 
-	fmt.Println("Successfully logged in user: ", profile.Username)
+	log.Println("Successfully logged in user: ", profile.Username)
 	return client, nil
 }
 
 func DisconnectFTP(client *ftp.ServerConn) error {
-	fmt.Println("Disconnecting from FTP...")
+	log.Println("Disconnecting from FTP...")
 	err := client.Quit()
 	if err != nil {
 		return err
 	}
-	fmt.Println("Successfully disconnected from FTP")
+	log.Println("Successfully disconnected from FTP")
 	return nil
 }
 
@@ -67,7 +68,7 @@ func DownloadDirectoryFTP(client *ftp.ServerConn, remoteDir, localDir string) er
 			}
 		}
 	}
-	fmt.Printf("Directory downloaded successfully: %s\n", localDir)
+	log.Printf("Directory downloaded successfully: %s\n", localDir)
 	return nil
 }
 
@@ -95,7 +96,7 @@ func DownloadFileFTP(client *ftp.ServerConn, remotePath, localPath string) error
 		return fmt.Errorf("unable to copy data to local file %s. Error: %w", localFile.Name(), err)
 	}
 
-	fmt.Printf("File downloaded successfully: %s\n", localPath)
+	log.Printf("File downloaded successfully: %s\n", localPath)
 	return nil
 }
 

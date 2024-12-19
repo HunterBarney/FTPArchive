@@ -2,15 +2,17 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 )
 
 func main() {
-	profilePath := flag.String("profile", "profile.json", "The path to the profile.")
+	profilePath := flag.String("profile", "ftptest.json", "The path to the profile.")
+
+	logFile := initLogging()
+	defer logFile.Close()
 
 	flag.Parse()
-	fmt.Println("profilePath:", *profilePath)
+	log.Println("profilePath:", *profilePath)
 
 	profile, err := LoadProfile(*profilePath)
 	if err != nil {
@@ -44,6 +46,6 @@ func main() {
 			log.Fatal(e)
 		}
 	default:
-		fmt.Println("Unknown protocol")
+		log.Println("Unknown protocol")
 	}
 }

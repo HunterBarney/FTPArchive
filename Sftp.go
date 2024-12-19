@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -12,7 +13,7 @@ import (
 
 // connectSFTP takes in a profile and returns an active SFTP connection.
 func connectSFTP(profile *Profile) (*sftp.Client, error) {
-	fmt.Println("Connecting to SFTP site: ", profile.HostName)
+	log.Println("Connecting to SFTP site: ", profile.HostName)
 
 	sshConfig := &ssh.ClientConfig{
 		User: profile.Username,
@@ -53,7 +54,7 @@ func downloadDirectorySFTP(client *sftp.Client, remoteDir, localDir string) erro
 		remoteFilePath = filepath.ToSlash(remoteFilePath) // Converts to unix format as filepath.join on windows defaults to windows format.
 		localFilePath := filepath.Join(localDir, file.Name())
 
-		fmt.Println("Downloading", remoteFilePath)
+		log.Println("Downloading", remoteFilePath)
 		if file.IsDir() {
 			err = downloadDirectorySFTP(client, remoteFilePath, localFilePath)
 			if err != nil {
@@ -66,7 +67,7 @@ func downloadDirectorySFTP(client *sftp.Client, remoteDir, localDir string) erro
 			}
 		}
 	}
-	fmt.Printf("Directory downloaded successfully: %s\n", localDir)
+	log.Printf("Directory downloaded successfully: %s\n", localDir)
 	return nil
 }
 
