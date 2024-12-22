@@ -48,4 +48,9 @@ func main() {
 	default:
 		log.Println("Unknown protocol")
 	}
+
+	e := CompressToZip(profile.OutputName)
+	if e != nil {
+		log.Fatal(e)
+	}
 }
