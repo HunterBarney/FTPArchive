@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 )
 
+// CompressToZip compresses the given directory path to a zip file
 func CompressToZip(source string) error {
 
 	err := os.MkdirAll("archive", os.ModePerm)
