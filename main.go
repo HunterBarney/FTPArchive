@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	profilePath := flag.String("profile", "ftptest.json", "The path to the profile.")
+	profilePath := flag.String("profile", "profile.json", "The path to the profile.")
 
 	logFile := initLogging()
 	defer logFile.Close()
@@ -47,5 +47,10 @@ func main() {
 		}
 	default:
 		log.Println("Unknown protocol")
+	}
+
+	e := CompressToZip(profile.OutputName)
+	if e != nil {
+		log.Fatal(e)
 	}
 }
