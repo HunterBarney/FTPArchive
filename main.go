@@ -6,13 +6,18 @@ import (
 )
 
 func main() {
-	profilePath := flag.String("profile", "profile.json", "The path to the profile.")
+	profilePath := flag.String("profile", "ftptest.json", "The path to the profile.")
 
 	logFile := initLogging()
 	defer logFile.Close()
 
 	flag.Parse()
 	log.Println("profilePath:", *profilePath)
+
+	config, err := LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	profile, err := LoadProfile(*profilePath)
 	if err != nil {
