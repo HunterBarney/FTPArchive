@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"os"
 )
@@ -23,10 +24,7 @@ type Config struct {
 	SendLogOverEmail bool `json:"sendLogOverEmail"`
 }
 
-// TODO: Enforce the following minimums: Retry count(1), Retry delay(1), LogDirectory/DownloadDirectory/ArchiveDirectory(not blank).
 // TODO: Make the config global somehow
-// TODO: Decide what defaults for non-required fields should be.
-// TODO: Validate config file by making sure each field exists in the file.
 // TODO: Implement retry count and retry delay
 // TODO: Implement Max allowed errors
 // TODO: Implement LogDirectory, DownloadDirectory, and ArchiveDirectory
@@ -56,6 +54,11 @@ func LoadConfig() (Config, error) {
 	err = decoder.Decode(&config)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	err = ValidateConfig(config)
+	if err != nil {
+		return config, err
 	}
 
 	return config, nil
@@ -96,5 +99,41 @@ func CreateConfig() error {
 		return err
 	}
 
+	return nil
+}
+
+func ValidateConfig(config Config) error {
+
+	if config.RetryCount < 1 {
+		return errors.New("retry count must be greater than zero")
+	}
+
+	if config.RetryDelay < 1 {
+		return errors.New("retry delay must be greater than zero")
+	}
+
+	if config.LogDirectory == "" {
+		return errors.New("log directory must be set")
+	}
+
+	if config.DownloadDirectory == "" {
+		return errors.New("download directory must be set")
+	}
+
+	if config.ArchiveDirectory == "" {
+		return errors.New("archive directory must be set")
+	}
+
+	if !IsValidPathName(config.DownloadDirectory) {
+		return errors.New("invalid download directory")
+	}
+
+	if !IsValidPathName(config.ArchiveDirectory) {
+		return errors.New("invalid archive directory")
+	}
+
+	if !IsValidPathName(config.LogDirectory) {
+		return errors.New("invalid log directory")
+	}
 	return nil
 }
