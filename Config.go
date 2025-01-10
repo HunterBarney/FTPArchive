@@ -10,7 +10,6 @@ import (
 type Config struct {
 	RetryCount        int    `json:"retryCount"`
 	RetryDelay        int    `json:"retryDelay"`
-	MaxAllowedErrors  int    `json:"maxAllowedErrors"`
 	LogDirectory      string `json:"logDirectory"`
 	DownloadDirectory string `json:"downloadDirectory"`
 	ArchiveDirectory  string `json:"archiveDirectory"`
@@ -68,7 +67,6 @@ func CreateConfig() error {
 	config := Config{
 		RetryCount:        3,
 		RetryDelay:        3,
-		MaxAllowedErrors:  0,
 		LogDirectory:      "logs",
 		DownloadDirectory: "downloads",
 		ArchiveDirectory:  "archives",
