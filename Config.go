@@ -25,7 +25,6 @@ type Config struct {
 
 // TODO: Make the config global somehow
 // TODO: Implement retry count and retry delay
-// TODO: Implement Max allowed errors
 // TODO: Implement LogDirectory, DownloadDirectory, and ArchiveDirectory
 // Leave email related config stuff alone for now.
 

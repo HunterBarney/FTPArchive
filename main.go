@@ -26,12 +26,12 @@ func main() {
 
 	switch profile.Protocol {
 	case "FTP":
-		client, e := ConnectFTP(&profile)
+		client, e := ConnectFTP(&profile, &config)
 		if e != nil {
 			log.Fatal(e)
 		}
 
-		e = ProcessDownloadsFTP(&profile, client)
+		e = ProcessDownloadsFTP(&profile, client, &config)
 		if e != nil {
 			log.Fatal(e)
 		}
