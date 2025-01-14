@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"strings"
 )
 
 type Config struct {
@@ -23,7 +24,6 @@ type Config struct {
 	SendLogOverEmail bool `json:"sendLogOverEmail"`
 }
 
-// TODO: Implement LogDirectory, DownloadDirectory, and ArchiveDirectory
 // Leave email related config stuff alone for now.
 
 // LoadConfig loads the programs config data and returns a struct with the supplied info.
@@ -57,6 +57,26 @@ func LoadConfig() (Config, error) {
 		return config, err
 	}
 
+	config.LogDirectory, err = ResolvePath(config.LogDirectory)
+	if err != nil {
+		return config, err
+	}
+	config.DownloadDirectory, err = ResolvePath(config.DownloadDirectory)
+	if err != nil {
+		return config, err
+	}
+	config.ArchiveDirectory, err = ResolvePath(config.ArchiveDirectory)
+	if err != nil {
+		return config, err
+	}
+
+	// Create download folder if it does not already exist.
+	_, err = os.Stat(config.DownloadDirectory)
+	if os.IsNotExist(err) {
+		os.MkdirAll(config.DownloadDirectory, 0755)
+	} else if err != nil {
+		log.Fatal(err)
+	}
 	return config, nil
 }
 
@@ -119,16 +139,28 @@ func ValidateConfig(config Config) error {
 		return errors.New("archive directory must be set")
 	}
 
-	if !IsValidPathName(config.DownloadDirectory) {
+	if !IsValidNameConfig(config.DownloadDirectory) {
 		return errors.New("invalid download directory")
 	}
 
-	if !IsValidPathName(config.ArchiveDirectory) {
+	if !IsValidNameConfig(config.ArchiveDirectory) {
 		return errors.New("invalid archive directory")
 	}
 
-	if !IsValidPathName(config.LogDirectory) {
+	if !IsValidNameConfig(config.LogDirectory) {
 		return errors.New("invalid log directory")
 	}
 	return nil
+}
+
+func ResolvePath(path string) (string, error) {
+	if strings.HasPrefix(path, "~") {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return path, err
+		}
+		path = strings.Replace(path, "~", home, 1)
+	}
+
+	return path, nil
 }

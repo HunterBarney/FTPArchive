@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -22,7 +23,7 @@ type Profile struct {
 }
 
 // LoadProfile reads data from a profile json file and returns a profile object.
-func LoadProfile(fileName string) (Profile, error) {
+func LoadProfile(fileName string, config *Config) (Profile, error) {
 	var profile Profile
 
 	profileFile, err := os.Open(fileName)
@@ -41,10 +42,21 @@ func LoadProfile(fileName string) (Profile, error) {
 
 	newFileName := FormatDateTime(profile.OutputName, time.Now())
 	if IsValidPathName(newFileName) {
-		profile.OutputName = newFileName
+		profile.OutputName = filepath.Join(config.DownloadDirectory, newFileName)
 	} else {
 		return profile, errors.New("output name invalid")
 	}
+
+	// Can not create an output folder that already exists
+	_, err = os.Stat(profile.OutputName)
+	if err == nil {
+		// File or directory exists
+		return profile, errors.New("output file already exists")
+	} else if !os.IsNotExist(err) {
+		// An unexpected error occurred
+		return profile, err
+	}
+
 	return profile, nil
 }
 
@@ -53,6 +65,17 @@ func IsValidPathName(path string) bool {
 	invalidChars := []string{"/", "<", ">", "\"", "\\", "|", "?", "*"}
 	for _, char := range invalidChars {
 		if strings.Contains(path, char) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func IsValidNameConfig(configPath string) bool {
+	invalidChars := []string{"<", ">", "|", "?", "*"}
+	for _, char := range invalidChars {
+		if strings.Contains(configPath, char) {
 			return false
 		}
 	}

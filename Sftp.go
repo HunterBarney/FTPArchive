@@ -181,6 +181,12 @@ func processDownloadsSFTP(client *sftp.Client, profile *Profile, config *Config)
 		var err error
 		var stat os.FileInfo
 
+		// Make output file.
+		err = os.MkdirAll(config.DownloadDirectory, os.ModePerm)
+		if err != nil {
+			return fmt.Errorf("unable to make output directory for file %s. Error: %w", profile.OutputName, err)
+		}
+
 		remotePath := item
 		localPath := filepath.Join(profile.OutputName, filepath.Base(item))
 

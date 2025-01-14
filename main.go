@@ -8,9 +8,6 @@ import (
 func main() {
 	profilePath := flag.String("profile", "ftptest.json", "The path to the profile.")
 
-	logFile := initLogging()
-	defer logFile.Close()
-
 	flag.Parse()
 	log.Println("profilePath:", *profilePath)
 
@@ -19,7 +16,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	profile, err := LoadProfile(*profilePath)
+	logFile := initLogging(&config)
+	defer logFile.Close()
+
+	profile, err := LoadProfile(*profilePath, &config)
 	if err != nil {
 		log.Fatal("Error loading profile:", err)
 	}
@@ -54,7 +54,7 @@ func main() {
 		log.Println("Unknown protocol")
 	}
 
-	e := CompressToZip(profile.OutputName)
+	e := CompressToZip(profile.OutputName, &config)
 	if e != nil {
 		log.Fatal(e)
 	}

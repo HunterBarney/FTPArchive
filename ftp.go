@@ -199,8 +199,9 @@ func DownloadFileFTP(client *ftp.ServerConn, remotePath, localPath string, confi
 
 // ProcessDownloadsFTP downloads all directories/files from the given profile.
 func ProcessDownloadsFTP(profile *Profile, client *ftp.ServerConn, config *Config) error {
+
 	//Create output folder in download directory
-	e := os.MkdirAll(profile.OutputName, 0755)
+	e := os.MkdirAll(config.DownloadDirectory, 0755)
 	if e != nil {
 		return fmt.Errorf("unable to make output directory for file %s. Error: %w", profile.OutputName, e)
 	}

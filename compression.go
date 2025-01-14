@@ -4,18 +4,23 @@ import (
 	"archive/zip"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 )
 
 // CompressToZip compresses the given directory path to a zip file
-func CompressToZip(source string) error {
+func CompressToZip(source string, config *Config) error {
 
-	err := os.MkdirAll("archive", os.ModePerm)
-	if err != nil {
-		return err
+	archiveFolder := config.ArchiveDirectory
+	if _, err := os.Stat(archiveFolder); os.IsNotExist(err) {
+		err = os.MkdirAll(archiveFolder, 0755)
+		if err != nil {
+			log.Fatal("Error creating log folder: ", err)
+		}
 	}
-	archive, e := os.Create("archive/" + source + ".zip")
+
+	archive, e := os.Create(archiveFolder + "/" + source + ".zip")
 	if e != nil {
 		return fmt.Errorf("failed to create zip file: %w", e)
 	}
