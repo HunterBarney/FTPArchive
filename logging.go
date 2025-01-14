@@ -7,10 +7,10 @@ import (
 	"time"
 )
 
-func initLogging() *os.File {
-	logFolder := "logs"
+func initLogging(config *Config) *os.File {
+	logFolder := config.LogDirectory
 	if _, err := os.Stat(logFolder); os.IsNotExist(err) {
-		err = os.Mkdir(logFolder, 0755)
+		err = os.MkdirAll(logFolder, 0755)
 		if err != nil {
 			log.Fatal("Error creating log folder: ", err)
 		}

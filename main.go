@@ -6,27 +6,32 @@ import (
 )
 
 func main() {
-	profilePath := flag.String("profile", "profile.json", "The path to the profile.")
-
-	logFile := initLogging()
-	defer logFile.Close()
+	profilePath := flag.String("profile", "ftptest.json", "The path to the profile.")
 
 	flag.Parse()
 	log.Println("profilePath:", *profilePath)
 
-	profile, err := LoadProfile(*profilePath)
+	config, err := LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	logFile := initLogging(&config)
+	defer logFile.Close()
+
+	profile, err := LoadProfile(*profilePath, &config)
 	if err != nil {
 		log.Fatal("Error loading profile:", err)
 	}
 
 	switch profile.Protocol {
 	case "FTP":
-		client, e := ConnectFTP(&profile)
+		client, e := ConnectFTP(&profile, &config)
 		if e != nil {
 			log.Fatal(e)
 		}
 
-		e = ProcessDownloadsFTP(&profile, client)
+		e = ProcessDownloadsFTP(&profile, client, &config)
 		if e != nil {
 			log.Fatal(e)
 		}
@@ -37,11 +42,11 @@ func main() {
 		}
 
 	case "SFTP":
-		client, e := connectSFTP(&profile)
+		client, e := connectSFTP(&profile, &config)
 		if e != nil {
 			log.Fatal(e)
 		}
-		e = processDownloadsSFTP(client, &profile)
+		e = processDownloadsSFTP(client, &profile, &config)
 		if e != nil {
 			log.Fatal(e)
 		}
@@ -49,7 +54,7 @@ func main() {
 		log.Println("Unknown protocol")
 	}
 
-	e := CompressToZip(profile.OutputName)
+	e := CompressToZip(profile.OutputName, &config)
 	if e != nil {
 		log.Fatal(e)
 	}

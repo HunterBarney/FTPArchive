@@ -9,11 +9,15 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 )
 
 // connectSFTP takes in a profile and returns an active SFTP connection.
-func connectSFTP(profile *Profile) (*sftp.Client, error) {
+func connectSFTP(profile *Profile, config *Config) (*sftp.Client, error) {
 	log.Println("Connecting to SFTP site: ", profile.HostName)
+
+	var sftpConnection *ssh.Client
+	var err error
 
 	sshConfig := &ssh.ClientConfig{
 		User: profile.Username,
@@ -23,11 +27,25 @@ func connectSFTP(profile *Profile) (*sftp.Client, error) {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
-	sftpConnection, err := ssh.Dial("tcp", profile.HostName+":"+strconv.Itoa(profile.Port), sshConfig)
-	if err != nil {
-		return nil, err
-	}
+	for i := 1; i < config.RetryCount; i++ {
+		sftpConnection, err = ssh.Dial("tcp", profile.HostName+":"+strconv.Itoa(profile.Port), sshConfig)
 
+		// Success
+		if err == nil {
+			log.Println("Connected successfully to remote site")
+			break
+		}
+
+		if err != nil && i < config.RetryCount {
+			log.Println("Failed. Retrying...")
+			time.Sleep(time.Duration(config.RetryDelay) * time.Second)
+			continue
+		}
+
+		if err != nil && i == config.RetryCount {
+			return nil, fmt.Errorf("failed to connect to remote site after %d retries", config.RetryCount)
+		}
+	}
 	sftpClient, err := sftp.NewClient(sftpConnection)
 	if err != nil {
 		return nil, err
@@ -37,12 +55,33 @@ func connectSFTP(profile *Profile) (*sftp.Client, error) {
 }
 
 // downloadDirectorySFTP recursively downloads all files from the provided remote directory.
-func downloadDirectorySFTP(client *sftp.Client, remoteDir, localDir string) error {
-	files, err := client.ReadDir(remoteDir)
-	if err != nil {
-		return fmt.Errorf("error getting list of files in remote directory %s. Error %w", remoteDir, err)
+func downloadDirectorySFTP(client *sftp.Client, remoteDir, localDir string, config *Config) error {
+	var files []os.FileInfo
+	var err error
+
+	log.Printf("Getting list of files from directory %s\n", remoteDir)
+	for i := 1; i < config.RetryCount; i++ {
+		// Gets list of files from remote directory
+		files, err = client.ReadDir(remoteDir)
+
+		// Success!
+		if err == nil {
+			break
+		}
+
+		// Failed, retries left
+		if err != nil && i < config.RetryCount {
+			log.Println("Failed. Retrying...")
+			time.Sleep(time.Duration(config.RetryDelay) * time.Second)
+		}
+
+		// Failed. No retries left.
+		if err != nil && i == config.RetryCount {
+			return fmt.Errorf("error getting list of files in remote directory %s after %d retries. err: %s", remoteDir, config.RetryCount, err)
+		}
 	}
 
+	log.Printf("Making local copy of directory %s\n", remoteDir)
 	err = os.MkdirAll(localDir, 0755)
 	if err != nil {
 		return fmt.Errorf("error creating directory %s: %w", localDir, err)
@@ -54,14 +93,13 @@ func downloadDirectorySFTP(client *sftp.Client, remoteDir, localDir string) erro
 		remoteFilePath = filepath.ToSlash(remoteFilePath) // Converts to unix format as filepath.join on windows defaults to windows format.
 		localFilePath := filepath.Join(localDir, file.Name())
 
-		log.Println("Downloading", remoteFilePath)
 		if file.IsDir() {
-			err = downloadDirectorySFTP(client, remoteFilePath, localFilePath)
+			err = downloadDirectorySFTP(client, remoteFilePath, localFilePath, config)
 			if err != nil {
 				return err
 			}
 		} else {
-			err = downloadFileSFTP(client, remoteFilePath, localFilePath)
+			err = downloadFileSFTP(client, remoteFilePath, localFilePath, config)
 			if err != nil {
 				return err
 			}
@@ -72,10 +110,30 @@ func downloadDirectorySFTP(client *sftp.Client, remoteDir, localDir string) erro
 }
 
 // downloadFileSFTP downloads a single file from a remote site
-func downloadFileSFTP(client *sftp.Client, remotePath, localPath string) error {
-	remoteFile, err := client.Open(remotePath)
-	if err != nil {
-		return fmt.Errorf("unable to read remote file %s. Error %s", remotePath, err)
+func downloadFileSFTP(client *sftp.Client, remotePath, localPath string, config *Config) error {
+	var remoteFile *sftp.File
+	var err error
+
+	log.Printf("Downloading file %s\n", remotePath)
+	for i := 1; i < config.RetryCount; i++ {
+		// Gets the remote files data
+		remoteFile, err = client.Open(remotePath)
+
+		// Success!
+		if err == nil {
+			break
+		}
+
+		// Failed, retries remaining
+		if err != nil && i < config.RetryCount {
+			log.Println("Failed. Retrying...")
+			time.Sleep(time.Duration(config.RetryDelay) * time.Second)
+		}
+
+		// Failed, no retries left.
+		if err != nil && i == config.RetryCount {
+			return fmt.Errorf("unable to read remote file %s. Error %s", remotePath, err)
+		}
 	}
 	defer remoteFile.Close()
 
@@ -84,37 +142,81 @@ func downloadFileSFTP(client *sftp.Client, remotePath, localPath string) error {
 		return fmt.Errorf("unable to make local directory for file %s. Error: %w", localPath, err)
 	}
 
+	log.Printf("Creating local file")
+	// Creates the local file
 	localFile, err := os.Create(localPath)
 	if err != nil {
 		return fmt.Errorf("unable to create local file %s. Error: %w", localPath, err)
 	}
 	defer localFile.Close()
 
-	_, err = io.Copy(localFile, remoteFile)
-	if err != nil {
-		return fmt.Errorf("unable to copy data to local file %s. Error: %w", localFile.Name(), err)
+	log.Printf("Copying data...")
+	for i := 1; i < config.RetryCount; i++ {
+		//Copies the remote data to the local file
+		_, err = io.Copy(localFile, remoteFile)
+
+		// Success!
+		if err == nil {
+			break
+		}
+
+		// Failed, retries remaining
+		if err != nil && i < config.RetryCount {
+			log.Println("Failed. Retrying...")
+			time.Sleep(time.Duration(config.RetryDelay) * time.Second)
+		}
+
+		// Failed, no retries left
+		if err != nil && i == config.RetryCount {
+			return fmt.Errorf("unable to copy data to local file %s. Error: %w", localFile.Name(), err)
+		}
 	}
+	log.Printf("File downloaded successfully: %s\n", localPath)
 	return nil
 }
 
 // processDownloadsSFTP downloads all directories/files from the given profile.
-func processDownloadsSFTP(client *sftp.Client, profile *Profile) error {
+func processDownloadsSFTP(client *sftp.Client, profile *Profile, config *Config) error {
 	for _, item := range profile.Downloads {
+		var err error
+		var stat os.FileInfo
+
+		// Make output file.
+		err = os.MkdirAll(config.DownloadDirectory, os.ModePerm)
+		if err != nil {
+			return fmt.Errorf("unable to make output directory for file %s. Error: %w", profile.OutputName, err)
+		}
+
 		remotePath := item
 		localPath := filepath.Join(profile.OutputName, filepath.Base(item))
 
-		stat, err := client.Stat(remotePath)
-		if err != nil {
-			return fmt.Errorf("unable to get file info for %s. Error: %w", remotePath, err)
+		for i := 1; i < config.RetryCount; i++ {
+			// Gets info about the remote file/directory
+			stat, err = client.Stat(remotePath)
+			// Success!
+			if err == nil {
+				break
+			}
+
+			// Failed, retries remaining
+			if err != nil && i < config.RetryCount {
+				log.Println("Failed. Retrying...")
+				time.Sleep(time.Duration(config.RetryDelay) * time.Second)
+			}
+
+			// Failed, no retries remaining
+			if err != nil && i == config.RetryCount {
+				return fmt.Errorf("unable to get file info for %s. Error: %w", remotePath, err)
+			}
 		}
 
-		if stat.IsDir() {
-			err = downloadDirectorySFTP(client, remotePath, localPath)
+		if stat != nil && stat.IsDir() {
+			err = downloadDirectorySFTP(client, remotePath, localPath, config)
 			if err != nil {
 				return err
 			}
 		} else {
-			err = downloadFileSFTP(client, remotePath, localPath)
+			err = downloadFileSFTP(client, remotePath, localPath, config)
 			if err != nil {
 				return err
 			}
