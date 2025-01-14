@@ -23,7 +23,7 @@ func ConnectFTP(profile *Profile, config *Config) (*ftp.ServerConn, error) {
 		client, err = ftp.Dial(connectionString, ftp.DialWithTimeout(5*time.Second))
 		// Success!
 		if err == nil {
-			log.Println("Connected succesfully to remote site")
+			log.Println("Connected successfully to remote site")
 			break
 		}
 
@@ -171,9 +171,7 @@ func DownloadFileFTP(client *ftp.ServerConn, remotePath, localPath string, confi
 	}
 	defer localFile.Close()
 
-	// TODO: Add retry functionality.
 	// Copies remote data to local file
-
 	log.Printf("Copying data...")
 	for i := 1; i < config.RetryCount; i++ {
 		_, err = io.Copy(localFile, resp)

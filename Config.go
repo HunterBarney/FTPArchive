@@ -23,8 +23,6 @@ type Config struct {
 	SendLogOverEmail bool `json:"sendLogOverEmail"`
 }
 
-// TODO: Make the config global somehow
-// TODO: Implement retry count and retry delay
 // TODO: Implement LogDirectory, DownloadDirectory, and ArchiveDirectory
 // Leave email related config stuff alone for now.
 

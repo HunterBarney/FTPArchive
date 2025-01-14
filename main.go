@@ -42,11 +42,11 @@ func main() {
 		}
 
 	case "SFTP":
-		client, e := connectSFTP(&profile)
+		client, e := connectSFTP(&profile, &config)
 		if e != nil {
 			log.Fatal(e)
 		}
-		e = processDownloadsSFTP(client, &profile)
+		e = processDownloadsSFTP(client, &profile, &config)
 		if e != nil {
 			log.Fatal(e)
 		}
