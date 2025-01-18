@@ -21,7 +21,8 @@ func CompressToZip(source string, config *config.Config) error {
 		}
 	}
 
-	archive, e := os.Create(archiveFolder + "/" + source + ".zip")
+	basename := filepath.Base(source)
+	archive, e := os.Create(archiveFolder + "/" + basename + ".zip")
 	if e != nil {
 		return fmt.Errorf("failed to create zip file: %w", e)
 	}
