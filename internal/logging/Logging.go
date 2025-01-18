@@ -1,13 +1,14 @@
-package main
+package logging
 
 import (
+	"FTPArchive/internal/config"
 	"io"
 	"log"
 	"os"
 	"time"
 )
 
-func initLogging(config *Config) *os.File {
+func InitLogging(config *config.Config) *os.File {
 	logFolder := config.LogDirectory
 	if _, err := os.Stat(logFolder); os.IsNotExist(err) {
 		err = os.MkdirAll(logFolder, 0755)

@@ -1,12 +1,13 @@
-package main
+package ftpclient
 
 import (
+	"FTPArchive/internal/config"
 	"path/filepath"
 	"testing"
 )
 
 func TestFTPConnect(t *testing.T) {
-	mockClient := &Profile{
+	mockClient := &config.Profile{
 		HostName: "test.rebex.net",
 		Port:     21,
 		Username: "demo",
@@ -29,7 +30,7 @@ func TestFTPConnect(t *testing.T) {
 }
 
 func TestFTPDownloadFile(t *testing.T) {
-	mockClient := &Profile{
+	mockClient := &config.Profile{
 		HostName:   "test.rebex.net",
 		Port:       21,
 		Username:   "demo",
@@ -60,7 +61,7 @@ func TestFTPDownloadFile(t *testing.T) {
 }
 
 func TestFTPDownloadDirectory(t *testing.T) {
-	mockClient := &Profile{
+	mockClient := &config.Profile{
 		HostName:   "test.rebex.net",
 		Port:       21,
 		Username:   "demo",

@@ -1,6 +1,7 @@
-package main
+package sftpclient
 
 import (
+	"FTPArchive/internal/config"
 	"fmt"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
@@ -12,8 +13,8 @@ import (
 	"time"
 )
 
-// connectSFTP takes in a profile and returns an active SFTP connection.
-func connectSFTP(profile *Profile, config *Config) (*sftp.Client, error) {
+// ConnectSFTP takes in a profile and returns an active SFTP connection.
+func ConnectSFTP(profile *config.Profile, config *config.Config) (*sftp.Client, error) {
 	log.Println("Connecting to SFTP site: ", profile.HostName)
 
 	var sftpConnection *ssh.Client
@@ -55,7 +56,7 @@ func connectSFTP(profile *Profile, config *Config) (*sftp.Client, error) {
 }
 
 // downloadDirectorySFTP recursively downloads all files from the provided remote directory.
-func downloadDirectorySFTP(client *sftp.Client, remoteDir, localDir string, config *Config) error {
+func downloadDirectorySFTP(client *sftp.Client, remoteDir, localDir string, config *config.Config) error {
 	var files []os.FileInfo
 	var err error
 
@@ -110,7 +111,7 @@ func downloadDirectorySFTP(client *sftp.Client, remoteDir, localDir string, conf
 }
 
 // downloadFileSFTP downloads a single file from a remote site
-func downloadFileSFTP(client *sftp.Client, remotePath, localPath string, config *Config) error {
+func downloadFileSFTP(client *sftp.Client, remotePath, localPath string, config *config.Config) error {
 	var remoteFile *sftp.File
 	var err error
 
@@ -175,8 +176,8 @@ func downloadFileSFTP(client *sftp.Client, remotePath, localPath string, config 
 	return nil
 }
 
-// processDownloadsSFTP downloads all directories/files from the given profile.
-func processDownloadsSFTP(client *sftp.Client, profile *Profile, config *Config) error {
+// ProcessDownloadsSFTP downloads all directories/files from the given profile.
+func ProcessDownloadsSFTP(client *sftp.Client, profile *config.Profile, config *config.Config) error {
 	for _, item := range profile.Downloads {
 		var err error
 		var stat os.FileInfo

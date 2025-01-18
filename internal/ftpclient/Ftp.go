@@ -1,6 +1,7 @@
-package main
+package ftpclient
 
 import (
+	"FTPArchive/internal/config"
 	"fmt"
 	"github.com/jlaffaye/ftp"
 	"io"
@@ -12,7 +13,7 @@ import (
 )
 
 // ConnectFTP takes in a profile and returns an active FTP connection.
-func ConnectFTP(profile *Profile, config *Config) (*ftp.ServerConn, error) {
+func ConnectFTP(profile *config.Profile, config *config.Config) (*ftp.ServerConn, error) {
 	connectionString := profile.HostName + ":" + strconv.Itoa(profile.Port)
 	var err error
 	var client *ftp.ServerConn
@@ -78,7 +79,7 @@ func DisconnectFTP(client *ftp.ServerConn) error {
 }
 
 // DownloadDirectoryFTP recursively downloads all files from the provided remote directory.
-func DownloadDirectoryFTP(client *ftp.ServerConn, remoteDir, localDir string, config *Config) error {
+func DownloadDirectoryFTP(client *ftp.ServerConn, remoteDir, localDir string, config *config.Config) error {
 	var err error
 	var entries []*ftp.Entry
 
@@ -132,7 +133,7 @@ func DownloadDirectoryFTP(client *ftp.ServerConn, remoteDir, localDir string, co
 }
 
 // DownloadFileFTP downloads a single file from a remote site
-func DownloadFileFTP(client *ftp.ServerConn, remotePath, localPath string, config *Config) error {
+func DownloadFileFTP(client *ftp.ServerConn, remotePath, localPath string, config *config.Config) error {
 
 	var err error
 	var resp *ftp.Response
@@ -198,7 +199,7 @@ func DownloadFileFTP(client *ftp.ServerConn, remotePath, localPath string, confi
 }
 
 // ProcessDownloadsFTP downloads all directories/files from the given profile.
-func ProcessDownloadsFTP(profile *Profile, client *ftp.ServerConn, config *Config) error {
+func ProcessDownloadsFTP(profile *config.Profile, client *ftp.ServerConn, config *config.Config) error {
 
 	//Create output folder in download directory
 	e := os.MkdirAll(config.DownloadDirectory, 0755)

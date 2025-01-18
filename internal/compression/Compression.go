@@ -1,6 +1,7 @@
-package main
+package compression
 
 import (
+	"FTPArchive/internal/config"
 	"archive/zip"
 	"fmt"
 	"io"
@@ -10,7 +11,7 @@ import (
 )
 
 // CompressToZip compresses the given directory path to a zip file
-func CompressToZip(source string, config *Config) error {
+func CompressToZip(source string, config *config.Config) error {
 
 	archiveFolder := config.ArchiveDirectory
 	if _, err := os.Stat(archiveFolder); os.IsNotExist(err) {

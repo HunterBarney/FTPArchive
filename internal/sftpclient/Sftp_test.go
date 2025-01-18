@@ -1,19 +1,20 @@
-package main
+package sftpclient
 
 import (
+	"FTPArchive/internal/config"
 	"path/filepath"
 	"testing"
 )
 
 func TestSFTPConnect(t *testing.T) {
-	mockClient := &Profile{
+	mockClient := &config.Profile{
 		HostName: "test.rebex.net",
 		Port:     22,
 		Username: "demo",
 		Password: "password",
 	}
 
-	client, e := connectSFTP(mockClient)
+	client, e := ConnectSFTP(mockClient)
 	if e != nil {
 		t.Fatal("Failed to connect: ", e)
 	}
@@ -24,7 +25,7 @@ func TestSFTPConnect(t *testing.T) {
 }
 
 func TestSFTPDownloadFile(t *testing.T) {
-	mockClient := &Profile{
+	mockClient := &config.Profile{
 		HostName:   "test.rebex.net",
 		Port:       22,
 		Username:   "demo",
@@ -32,7 +33,7 @@ func TestSFTPDownloadFile(t *testing.T) {
 		OutputName: "backup_test_sftp",
 	}
 
-	client, e := connectSFTP(mockClient)
+	client, e := ConnectSFTP(mockClient)
 	if e != nil {
 		t.Fatal("Failed to connect: ", e)
 	}
@@ -50,7 +51,7 @@ func TestSFTPDownloadFile(t *testing.T) {
 }
 
 func TestSFTPDownloadDirectory(t *testing.T) {
-	mockClient := &Profile{
+	mockClient := &config.Profile{
 		HostName:   "test.rebex.net",
 		Port:       22,
 		Username:   "demo",
@@ -58,7 +59,7 @@ func TestSFTPDownloadDirectory(t *testing.T) {
 		OutputName: "backup_test_dir_sftp",
 	}
 
-	client, e := connectSFTP(mockClient)
+	client, e := ConnectSFTP(mockClient)
 	if e != nil {
 		t.Fatal("Failed to connect: ", e)
 	}

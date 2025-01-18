@@ -1,6 +1,7 @@
-package main
+package config
 
 import (
+	"FTPArchive/internal/datetime"
 	"encoding/json"
 	"errors"
 	"log"
@@ -40,7 +41,7 @@ func LoadProfile(fileName string, config *Config) (Profile, error) {
 		log.Fatal(err)
 	}
 
-	newFileName := FormatDateTime(profile.OutputName, time.Now())
+	newFileName := datetime.FormatDateTime(profile.OutputName, time.Now())
 	if IsValidPathName(newFileName) {
 		profile.OutputName = filepath.Join(config.DownloadDirectory, newFileName)
 	} else {
