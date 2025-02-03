@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	profilePath := flag.String("profile", "/home/hunter/GolandProjects/FTPArchive/test/ftptest.json", "The path to the profile.")
+	profilePath := flag.String("profile", "profile.json", "The path to the profile.")
 
 	flag.Parse()
 	log.Println("profilePath:", *profilePath)

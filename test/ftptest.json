@@ -9,5 +9,9 @@
     "pub",
     "pub/example/imap-console-client.png"
   ],
-  "outputName": "backup"
+  "outputName": "backup",
+  "uploadProfile": {
+    "platform": "gcp",
+    "credentials_file": "creds.json"
+  }
 }

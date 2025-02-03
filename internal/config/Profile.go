@@ -11,6 +11,11 @@ import (
 	"time"
 )
 
+type UploadProfile struct {
+	Platform        string `json:"platform"`
+	CredentialsFile string `json:"credentials_file"`
+}
+
 type Profile struct {
 	HostName string `json:"hostName"`
 	Port     int    `json:"port"`
@@ -19,8 +24,9 @@ type Profile struct {
 	// Can be SFTP or FTP
 	Protocol string `json:"protocol"`
 	// List of files/directories to download. * can be used to specify everything.
-	Downloads  []string `json:"downloads"`
-	OutputName string   `json:"outputName"`
+	Downloads     []string      `json:"downloads"`
+	OutputName    string        `json:"outputName"`
+	UploadProfile UploadProfile `json:"uploadProfile"`
 }
 
 // LoadProfile reads data from a profile json file and returns a profile object.
