@@ -4,6 +4,7 @@ import (
 	"FTPArchive/internal/compression"
 	"FTPArchive/internal/config"
 	"FTPArchive/internal/ftpclient"
+	"FTPArchive/internal/gcp"
 	"FTPArchive/internal/logging"
 	"FTPArchive/internal/sftpclient"
 	"flag"
@@ -63,4 +64,10 @@ func main() {
 	if e != nil {
 		log.Fatal(e)
 	}
+
+	e = gcp.UploadArchiveGcp(&profile)
+	if e != nil {
+		log.Fatal(e)
+	}
+
 }

@@ -12,6 +12,7 @@
   "outputName": "backup",
   "uploadProfile": {
     "platform": "gcp",
-    "credentials_file": "creds.json"
+    "credentials_file": "creds.json",
+    "bucket": "bucket"
   }
 }

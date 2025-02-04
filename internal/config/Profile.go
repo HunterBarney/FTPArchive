@@ -14,6 +14,7 @@ import (
 type UploadProfile struct {
 	Platform        string `json:"platform"`
 	CredentialsFile string `json:"credentials_file"`
+	Bucket          string `json:"bucket"`
 }
 
 type Profile struct {
@@ -27,6 +28,7 @@ type Profile struct {
 	Downloads     []string      `json:"downloads"`
 	OutputName    string        `json:"outputName"`
 	UploadProfile UploadProfile `json:"uploadProfile"`
+	ArchivePath   string        //Full path to the archive file
 }
 
 // LoadProfile reads data from a profile json file and returns a profile object.
@@ -63,6 +65,8 @@ func LoadProfile(fileName string, config *Config) (Profile, error) {
 		// An unexpected error occurred
 		return profile, err
 	}
+
+	profile.ArchivePath = filepath.Join(config.ArchiveDirectory, newFileName) + ".zip"
 
 	return profile, nil
 }
