@@ -11,12 +11,6 @@ import (
 	"time"
 )
 
-type UploadProfile struct {
-	Platform        string `json:"platform"`
-	CredentialsFile string `json:"credentials_file"`
-	Bucket          string `json:"bucket"`
-}
-
 type Profile struct {
 	HostName string `json:"hostName"`
 	Port     int    `json:"port"`
@@ -25,10 +19,12 @@ type Profile struct {
 	// Can be SFTP or FTP
 	Protocol string `json:"protocol"`
 	// List of files/directories to download. * can be used to specify everything.
-	Downloads     []string      `json:"downloads"`
-	OutputName    string        `json:"outputName"`
-	UploadProfile UploadProfile `json:"uploadProfile"`
-	ArchivePath   string        //Full path to the archive file
+	Downloads  []string `json:"downloads"`
+	OutputName string   `json:"outputName"`
+	//Can be AWS or GCP
+	UploadPlatform string `json:"uploadPlatform"`
+	BucketName     string `json:"bucketName"`
+	ArchivePath    string //Full path to the archive file
 }
 
 // LoadProfile reads data from a profile json file and returns a profile object.
