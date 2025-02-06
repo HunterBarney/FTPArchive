@@ -9,5 +9,7 @@
     "pub",
     "pub/example/imap-console-client.png"
   ],
-  "outputName": "backup"
+  "outputName": "backup",
+  "uploadPlatform": "aws",
+  "bucketName": "archive"
 }

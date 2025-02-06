@@ -21,6 +21,10 @@ type Profile struct {
 	// List of files/directories to download. * can be used to specify everything.
 	Downloads  []string `json:"downloads"`
 	OutputName string   `json:"outputName"`
+	//Can be AWS or GCP
+	UploadPlatform string `json:"uploadPlatform"`
+	BucketName     string `json:"bucketName"`
+	ArchivePath    string //Full path to the archive file
 }
 
 // LoadProfile reads data from a profile json file and returns a profile object.
@@ -57,6 +61,8 @@ func LoadProfile(fileName string, config *Config) (Profile, error) {
 		// An unexpected error occurred
 		return profile, err
 	}
+
+	profile.ArchivePath = filepath.Join(config.ArchiveDirectory, newFileName) + ".zip"
 
 	return profile, nil
 }

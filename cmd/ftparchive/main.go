@@ -1,9 +1,11 @@
 package main
 
 import (
+	"FTPArchive/internal/awsclient"
 	"FTPArchive/internal/compression"
 	"FTPArchive/internal/config"
 	"FTPArchive/internal/ftpclient"
+	"FTPArchive/internal/gcp"
 	"FTPArchive/internal/logging"
 	"FTPArchive/internal/sftpclient"
 	"flag"
@@ -11,7 +13,7 @@ import (
 )
 
 func main() {
-	profilePath := flag.String("profile", "/home/hunter/GolandProjects/FTPArchive/test/ftptest.json", "The path to the profile.")
+	profilePath := flag.String("profile", "profile.json", "The path to the profile.")
 
 	flag.Parse()
 	log.Println("profilePath:", *profilePath)
@@ -62,5 +64,20 @@ func main() {
 	e := compression.CompressToZip(profile.OutputName, &configFile)
 	if e != nil {
 		log.Fatal(e)
+	}
+
+	// Handle uploading
+	if profile.UploadPlatform == "aws" || profile.UploadPlatform == "AWS" {
+		e = awsclient.UploadFileAWS(&profile)
+		if e != nil {
+			log.Fatal(e)
+		}
+	} else if profile.UploadPlatform == "gcp" || profile.UploadPlatform == "GCP" {
+		e = gcp.UploadArchiveGcp(&profile)
+		if e != nil {
+			log.Fatal(e)
+		}
+	} else {
+		log.Fatalf("Unknown upload platform %s", profile.UploadPlatform)
 	}
 }
