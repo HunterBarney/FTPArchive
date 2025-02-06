@@ -5,17 +5,16 @@ import (
 	"cloud.google.com/go/storage"
 	"context"
 	"fmt"
-	"google.golang.org/api/option"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
 )
 
-func CreateGcpClient(profile *config.Profile) (*storage.Client, error) {
+func CreateGcpClient() (*storage.Client, error) {
 	ctx := context.Background()
 	log.Println("Connecting to Google Cloud Platform")
-	client, err := storage.NewClient(ctx, option.WithCredentialsFile(profile.UploadProfile.CredentialsFile))
+	client, err := storage.NewClient(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Google Cloud Platform client: %v", err)
 	}
@@ -23,17 +22,17 @@ func CreateGcpClient(profile *config.Profile) (*storage.Client, error) {
 }
 
 func UploadArchiveGcp(profile *config.Profile) error {
-	client, err := CreateGcpClient(profile)
+	client, err := CreateGcpClient()
 	if err != nil {
 		return err
 	}
 
-	bucket := client.Bucket(profile.UploadProfile.Bucket)
+	bucket := client.Bucket(profile.BucketName)
 
 	baseName := filepath.Base(profile.ArchivePath)
 	obj := bucket.Object(baseName)
 	writer := obj.NewWriter(context.Background())
-	log.Printf("Uploading Archive as %s to bucket %s", baseName, profile.UploadProfile.Bucket)
+	log.Printf("Uploading Archive as %s to bucket %s", baseName, profile.BucketName)
 
 	archive, err := os.Open(profile.ArchivePath)
 	if err != nil {

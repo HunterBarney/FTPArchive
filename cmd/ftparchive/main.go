@@ -1,6 +1,7 @@
 package main
 
 import (
+	"FTPArchive/internal/awsclient"
 	"FTPArchive/internal/compression"
 	"FTPArchive/internal/config"
 	"FTPArchive/internal/ftpclient"
@@ -65,9 +66,18 @@ func main() {
 		log.Fatal(e)
 	}
 
-	e = gcp.UploadArchiveGcp(&profile)
-	if e != nil {
-		log.Fatal(e)
+	// Handle uploading
+	if profile.UploadPlatform == "aws" || profile.UploadPlatform == "AWS" {
+		e = awsclient.UploadFileAWS(&profile)
+		if e != nil {
+			log.Fatal(e)
+		}
+	} else if profile.UploadPlatform == "gcp" || profile.UploadPlatform == "GCP" {
+		e = gcp.UploadArchiveGcp(&profile)
+		if e != nil {
+			log.Fatal(e)
+		}
+	} else {
+		log.Fatalf("Unknown upload platform %s", profile.UploadPlatform)
 	}
-
 }

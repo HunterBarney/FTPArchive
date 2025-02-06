@@ -10,9 +10,6 @@
     "pub/example/imap-console-client.png"
   ],
   "outputName": "backup",
-  "uploadProfile": {
-    "platform": "gcp",
-    "credentials_file": "creds.json",
-    "bucket": "bucket"
-  }
+  "uploadPlatform": "aws",
+  "bucketName": "archive"
 }
