@@ -4,6 +4,7 @@ import (
 	"FTPArchive/internal/awsclient"
 	"FTPArchive/internal/compression"
 	"FTPArchive/internal/config"
+	"FTPArchive/internal/emailclient"
 	"FTPArchive/internal/ftpclient"
 	"FTPArchive/internal/gcp"
 	"FTPArchive/internal/logging"
@@ -31,6 +32,7 @@ func main() {
 		log.Fatal("Error loading profile:", err)
 	}
 
+	emailclient.SendEmail("Test Email", "test test", &configFile, &profile)
 	switch profile.Protocol {
 	case "FTP":
 		client, e := ftpclient.ConnectFTP(&profile, &configFile)
