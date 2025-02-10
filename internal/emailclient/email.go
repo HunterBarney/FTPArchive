@@ -3,21 +3,56 @@ package emailclient
 import (
 	"FTPArchive/internal/config"
 	"fmt"
-	"log"
+	"github.com/wneessen/go-mail"
 )
 
 func SendEmail(subject, body string, config *config.Config, profile *config.Profile) error {
-	// TODO: TESTING ONLY, REMOVE BEFORE FINAL VERSION OF BRANCH
-	log.Printf("Config { Host %s, port %s, username %s, password %s, from %s, to %s, cc %s, bcc %s}", config.SMTP.Host, config.SMTP.Port, config.SMTP.Username, config.SMTP.Password, config.SMTP.From, config.SMTP.To, config.SMTP.CC, config.SMTP.BCC)
-	log.Printf("Profile { Host %s, port %s, username %s, password %s, from %s, to %s, cc %s, bcc %s}", profile.SMTP.Host, profile.SMTP.Port, profile.SMTP.Username, profile.SMTP.Password, profile.SMTP.From, profile.SMTP.To, profile.SMTP.CC, profile.SMTP.BCC)
-
 	smtp, err := validateSMTP(profile, config)
 	if err != nil {
 		return err
 	}
 
-	// TODO: TESTING ONLY, REMOVE BEFORE FINAL VERSION OF BRANCH
-	log.Printf("Combined { Host %s, port %s, username %s, password %s, from %s, to %s, cc %s, bcc %s}", smtp.Host, smtp.Port, smtp.Username, smtp.Password, smtp.From, smtp.To, smtp.CC, smtp.BCC)
+	msg := mail.NewMsg()
+
+	msg.Subject(subject)
+	msg.SetBodyString(mail.TypeTextPlain, body)
+
+	err = msg.From(smtp.From)
+	if err != nil {
+		return err
+	}
+
+	for _, element := range smtp.To {
+		err = msg.AddTo(element)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, element := range smtp.CC {
+		err = msg.AddCc(element)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, element := range smtp.BCC {
+		err = msg.AddBcc(element)
+		if err != nil {
+			return err
+		}
+	}
+
+	client, err := mail.NewClient(smtp.Host, mail.WithPort(smtp.Port), mail.WithSMTPAuth(mail.SMTPAuthPlain),
+		mail.WithUsername(smtp.Username), mail.WithPassword(smtp.Password))
+	if err != nil {
+		return err
+	}
+
+	err = client.DialAndSend(msg)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
