@@ -4,9 +4,10 @@ import (
 	"FTPArchive/internal/config"
 	"fmt"
 	"github.com/wneessen/go-mail"
+	"os"
 )
 
-func SendEmail(subject, body string, config *config.Config, profile *config.Profile) error {
+func SendEmail(subject, body string, config *config.Config, profile *config.Profile, logFile *os.File) error {
 	smtp, err := validateSMTP(profile, config)
 	if err != nil {
 		return err
@@ -41,6 +42,10 @@ func SendEmail(subject, body string, config *config.Config, profile *config.Prof
 		if err != nil {
 			return err
 		}
+	}
+
+	if config.SendLogOverEmail {
+		msg.AttachFile(logFile.Name())
 	}
 
 	client, err := mail.NewClient(smtp.Host, mail.WithPort(smtp.Port), mail.WithSMTPAuth(mail.SMTPAuthPlain),

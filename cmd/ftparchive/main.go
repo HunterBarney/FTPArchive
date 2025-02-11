@@ -32,7 +32,6 @@ func main() {
 		log.Fatal("Error loading profile:", err)
 	}
 
-	emailclient.SendEmail("Test Email", "test test", &configFile, &profile)
 	switch profile.Protocol {
 	case "FTP":
 		client, e := ftpclient.ConnectFTP(&profile, &configFile)
@@ -80,6 +79,16 @@ func main() {
 			log.Fatal(e)
 		}
 	} else {
-		log.Fatalf("Unknown upload platform %s", profile.UploadPlatform)
+		log.Printf("Unknown upload platform %s", profile.UploadPlatform)
 	}
+
+	// Success!! If email is enabled, send the success email
+	if configFile.SendEmail {
+		body := "Profile of " + profile.OutputName + " has been archived successfully!"
+		err = emailclient.SendEmail("FTPArchive Success!", body, &configFile, &profile, logFile)
+		if err != nil {
+			log.Fatalf("Error sending email: %v", err)
+		}
+	}
+
 }
