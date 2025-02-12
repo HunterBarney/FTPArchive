@@ -16,9 +16,30 @@ import (
 )
 
 func main() {
+	ProgramVersion := "0.3.0 - Alpha"
+
 	profilePath := flag.String("profile", "profile.json", "The path to the profile.")
+	manualDownload := flag.Bool("download", false, "Runs only the download function, unless another function is explicitly passed as argument")
+	manualArchive := flag.Bool("archive", false, "Runs only the archive function unless another function is explicitly passed as argument")
+	manualUpload := flag.Bool("upload", false, "Runs only the upload function unless another function is explicitly passed as argument")
+	help := flag.Bool("help", false, "Shows this help")
+	manualMode := false
 
 	flag.Parse()
+
+	// If any manual flags are set to true above, enable manual mode
+	if *manualDownload || *manualArchive || *manualUpload {
+		manualMode = true
+	}
+
+	if *help {
+		fmt.Println("FTPArchive v" + ProgramVersion)
+		fmt.Println("Usage: ftparchive [OPTIONS]")
+		flag.PrintDefaults()
+
+		os.Exit(0)
+	}
+
 	log.Println("profilePath:", *profilePath)
 
 	configFile, err := config.LoadConfig()
@@ -34,54 +55,60 @@ func main() {
 		failState(&profile, &configFile, logFile, err)
 	}
 
-	switch profile.Protocol {
-	case "FTP":
-		client, e := ftpclient.ConnectFTP(&profile, &configFile)
-		if e != nil {
-			failState(&profile, &configFile, logFile, e)
-		}
+	if !manualMode || *manualDownload {
+		switch profile.Protocol {
+		case "FTP":
+			client, e := ftpclient.ConnectFTP(&profile, &configFile)
+			if e != nil {
+				failState(&profile, &configFile, logFile, e)
+			}
 
-		e = ftpclient.ProcessDownloadsFTP(&profile, client, &configFile)
-		if e != nil {
-			failState(&profile, &configFile, logFile, e)
-		}
+			e = ftpclient.ProcessDownloadsFTP(&profile, client, &configFile)
+			if e != nil {
+				failState(&profile, &configFile, logFile, e)
+			}
 
-		e = ftpclient.DisconnectFTP(client)
-		if e != nil {
-			failState(&profile, &configFile, logFile, e)
-		}
+			e = ftpclient.DisconnectFTP(client)
+			if e != nil {
+				failState(&profile, &configFile, logFile, e)
+			}
 
-	case "SFTP":
-		client, e := sftpclient.ConnectSFTP(&profile, &configFile)
-		if e != nil {
-			failState(&profile, &configFile, logFile, e)
+		case "SFTP":
+			client, e := sftpclient.ConnectSFTP(&profile, &configFile)
+			if e != nil {
+				failState(&profile, &configFile, logFile, e)
+			}
+			e = sftpclient.ProcessDownloadsSFTP(client, &profile, &configFile)
+			if e != nil {
+				failState(&profile, &configFile, logFile, e)
+			}
+		default:
+			failState(&profile, &configFile, logFile, fmt.Errorf("unknown protocol: %s", profile.Protocol))
 		}
-		e = sftpclient.ProcessDownloadsSFTP(client, &profile, &configFile)
-		if e != nil {
-			failState(&profile, &configFile, logFile, e)
-		}
-	default:
-		failState(&profile, &configFile, logFile, fmt.Errorf("unknown protocol: %s", profile.Protocol))
 	}
 
-	e := compression.CompressToZip(profile.OutputName, &configFile)
-	if e != nil {
-		failState(&profile, &configFile, logFile, e)
+	if !manualMode || *manualArchive {
+		e := compression.CompressToZip(profile.OutputName, &configFile)
+		if e != nil {
+			failState(&profile, &configFile, logFile, e)
+		}
 	}
 
-	// Handle uploading
-	if profile.UploadPlatform == "aws" || profile.UploadPlatform == "AWS" {
-		e = awsclient.UploadFileAWS(&profile)
-		if e != nil {
-			failState(&profile, &configFile, logFile, e)
+	if !manualMode || *manualUpload {
+		// Handle uploading
+		if profile.UploadPlatform == "aws" || profile.UploadPlatform == "AWS" {
+			e := awsclient.UploadFileAWS(&profile)
+			if e != nil {
+				failState(&profile, &configFile, logFile, e)
+			}
+		} else if profile.UploadPlatform == "gcp" || profile.UploadPlatform == "GCP" {
+			e := gcp.UploadArchiveGcp(&profile)
+			if e != nil {
+				failState(&profile, &configFile, logFile, e)
+			}
+		} else {
+			log.Printf("Unknown upload platform %s", profile.UploadPlatform)
 		}
-	} else if profile.UploadPlatform == "gcp" || profile.UploadPlatform == "GCP" {
-		e = gcp.UploadArchiveGcp(&profile)
-		if e != nil {
-			failState(&profile, &configFile, logFile, e)
-		}
-	} else {
-		log.Printf("Unknown upload platform %s", profile.UploadPlatform)
 	}
 
 	// Success!! If email is enabled, send the success email
