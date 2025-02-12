@@ -10,7 +10,9 @@ import (
 	"FTPArchive/internal/logging"
 	"FTPArchive/internal/sftpclient"
 	"flag"
+	"fmt"
 	"log"
+	"os"
 )
 
 func main() {
@@ -29,54 +31,54 @@ func main() {
 
 	profile, err := config.LoadProfile(*profilePath, &configFile)
 	if err != nil {
-		log.Fatal("Error loading profile:", err)
+		failState(&profile, &configFile, logFile, err)
 	}
 
 	switch profile.Protocol {
 	case "FTP":
 		client, e := ftpclient.ConnectFTP(&profile, &configFile)
 		if e != nil {
-			log.Fatal(e)
+			failState(&profile, &configFile, logFile, e)
 		}
 
 		e = ftpclient.ProcessDownloadsFTP(&profile, client, &configFile)
 		if e != nil {
-			log.Fatal(e)
+			failState(&profile, &configFile, logFile, e)
 		}
 
 		e = ftpclient.DisconnectFTP(client)
 		if e != nil {
-			log.Fatal(e)
+			failState(&profile, &configFile, logFile, e)
 		}
 
 	case "SFTP":
 		client, e := sftpclient.ConnectSFTP(&profile, &configFile)
 		if e != nil {
-			log.Fatal(e)
+			failState(&profile, &configFile, logFile, e)
 		}
 		e = sftpclient.ProcessDownloadsSFTP(client, &profile, &configFile)
 		if e != nil {
-			log.Fatal(e)
+			failState(&profile, &configFile, logFile, e)
 		}
 	default:
-		log.Println("Unknown protocol")
+		failState(&profile, &configFile, logFile, fmt.Errorf("unknown protocol: %s", profile.Protocol))
 	}
 
 	e := compression.CompressToZip(profile.OutputName, &configFile)
 	if e != nil {
-		log.Fatal(e)
+		failState(&profile, &configFile, logFile, e)
 	}
 
 	// Handle uploading
 	if profile.UploadPlatform == "aws" || profile.UploadPlatform == "AWS" {
 		e = awsclient.UploadFileAWS(&profile)
 		if e != nil {
-			log.Fatal(e)
+			failState(&profile, &configFile, logFile, e)
 		}
 	} else if profile.UploadPlatform == "gcp" || profile.UploadPlatform == "GCP" {
 		e = gcp.UploadArchiveGcp(&profile)
 		if e != nil {
-			log.Fatal(e)
+			failState(&profile, &configFile, logFile, e)
 		}
 	} else {
 		log.Printf("Unknown upload platform %s", profile.UploadPlatform)
@@ -91,4 +93,13 @@ func main() {
 		}
 	}
 
+}
+
+func failState(profile *config.Profile, config *config.Config, logFile *os.File, err error) {
+	log.Printf(err.Error())
+	err = emailclient.SendFailEmail(config, profile, err, logFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	os.Exit(1)
 }

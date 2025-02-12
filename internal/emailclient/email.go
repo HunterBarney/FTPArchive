@@ -127,3 +127,16 @@ func getFirstNonZero(a, b int) int {
 	}
 	return b
 }
+
+// SendFailEmail sends a pre-made fail email with body text of "Download {output name} failed with {error}".
+// Automatically checks if sending emails is enabled in the config.
+func SendFailEmail(config *config.Config, profile *config.Profile, e error, log *os.File) error {
+	if config.SendLogOverEmail {
+		body := fmt.Sprintf("Download %s failed with error %s", profile.OutputName, e)
+		err := SendEmail("FTPArchive Failed!", body, config, profile, log)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
