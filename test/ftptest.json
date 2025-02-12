@@ -11,5 +11,15 @@
   ],
   "outputName": "backup",
   "uploadPlatform": "aws",
-  "bucketName": "archive"
+  "bucketName": "archive",
+  "smtp": {
+    "host": "",
+    "port": 0,
+    "username": "testuser",
+    "password": "testpassword",
+    "from": "dnr@test.com",
+    "to": ["test@test.com"],
+    "cc": ["anothertest@test.com"],
+    "bcc": ["admin@test.com"]
+  }
 }

@@ -8,23 +8,27 @@ import (
 	"strings"
 )
 
-type Config struct {
-	RetryCount        int    `json:"retryCount"`
-	RetryDelay        int    `json:"retryDelay"`
-	LogDirectory      string `json:"logDirectory"`
-	DownloadDirectory string `json:"downloadDirectory"`
-	ArchiveDirectory  string `json:"archiveDirectory"`
-	SendEmail         bool   `json:"sendEmail"`
-	SMTP              struct {
-		Host     string `json:"host"`
-		Port     int    `json:"port"`
-		Username string `json:"username"`
-		Password string `json:"password"`
-	} `json:"smtp"`
-	SendLogOverEmail bool `json:"sendLogOverEmail"`
+type SMTPInfo struct {
+	Host     string   `json:"host"`
+	Port     int      `json:"port"`
+	Username string   `json:"username"`
+	Password string   `json:"password"`
+	From     string   `json:"from"`
+	To       []string `json:"to"`
+	CC       []string `json:"cc"`
+	BCC      []string `json:"bcc"`
 }
 
-// Leave email related config stuff alone for now.
+type Config struct {
+	RetryCount        int      `json:"retryCount"`
+	RetryDelay        int      `json:"retryDelay"`
+	LogDirectory      string   `json:"logDirectory"`
+	DownloadDirectory string   `json:"downloadDirectory"`
+	ArchiveDirectory  string   `json:"archiveDirectory"`
+	SendEmail         bool     `json:"sendEmail"`
+	SMTP              SMTPInfo `json:"smtp"`
+	SendLogOverEmail  bool     `json:"sendLogOverEmail"`
+}
 
 // LoadConfig loads the programs config data and returns a struct with the supplied info.
 func LoadConfig() (Config, error) {
@@ -89,16 +93,15 @@ func CreateConfig() error {
 		ArchiveDirectory:  "archives",
 		SendEmail:         true,
 		SendLogOverEmail:  true,
-		SMTP: struct {
-			Host     string `json:"host"`
-			Port     int    `json:"port"`
-			Username string `json:"username"`
-			Password string `json:"password"`
-		}{
+		SMTP: SMTPInfo{
 			Host:     "",
 			Port:     0,
 			Username: "",
 			Password: "",
+			From:     "",
+			To:       []string{},
+			CC:       []string{},
+			BCC:      []string{},
 		},
 	}
 
