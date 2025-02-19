@@ -22,10 +22,13 @@ type Profile struct {
 	Downloads  []string `json:"downloads"`
 	OutputName string   `json:"outputName"`
 	//Can be AWS or GCP
-	UploadPlatform string   `json:"uploadPlatform"`
-	BucketName     string   `json:"bucketName"`
-	SMTP           SMTPInfo `json:"smtp"`
-	ArchivePath    string   //Full path to the archive file
+	UploadPlatform   string   `json:"uploadPlatform"`
+	BucketName       string   `json:"bucketName"`
+	SMTP             SMTPInfo `json:"smtp"`
+	CleanupDownloads bool     `json:"cleanupDownloads"`
+	CleanupArchives  bool     `json:"cleanupArchives"`
+	CleanupOnFail    bool     `json:"cleanupOnFail"`
+	ArchivePath      string   //Full path to the archive file
 }
 
 // LoadProfile reads data from a profile json file and returns a profile object.

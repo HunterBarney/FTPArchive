@@ -2,6 +2,7 @@ package main
 
 import (
 	"FTPArchive/internal/awsclient"
+	"FTPArchive/internal/cleanup"
 	"FTPArchive/internal/compression"
 	"FTPArchive/internal/config"
 	"FTPArchive/internal/emailclient"
@@ -111,6 +112,11 @@ func main() {
 		}
 	}
 
+	err = cleanup.Cleanup(&profile)
+	if err != nil {
+		failState(&profile, &configFile, logFile, err)
+	}
+
 	// Success!! If email is enabled, send the success email
 	if configFile.SendEmail {
 		body := "Profile of " + profile.OutputName + " has been archived successfully!"
@@ -119,12 +125,19 @@ func main() {
 			log.Fatalf("Error sending email: %v", err)
 		}
 	}
-
 }
 
 func failState(profile *config.Profile, config *config.Config, logFile *os.File, err error) {
 	log.Printf(err.Error())
-	err = emailclient.SendFailEmail(config, profile, err, logFile)
+	if profile.CleanupOnFail {
+		err = cleanup.Cleanup(profile)
+		if err != nil {
+			log.Printf("Error running cleanup: %v", err)
+		}
+	}
+	if config.SendEmail {
+		err = emailclient.SendFailEmail(config, profile, err, logFile)
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
