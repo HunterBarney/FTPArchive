@@ -74,6 +74,9 @@ Example profile:
     "bcc": [
       ""
     ]
+    "cleanupDownloads": true,
+    "cleanupArchives": true,
+    "cleanupOnFail": true
   }
 }
 ```
@@ -89,6 +92,9 @@ Example profile:
 **uploadPlatform**: The platform you will be uploading the archive to. Can be either AWS or GCP. <br>
 **bucketName**: The bucket that the archive will be placed into on the upload platform. <br>
 **smtp**: A set of values to connect to a mail server and recipients that mail will be sent to. These values will overwrite anything put in the smtp section of the config file. <br>
+**cleanupDownloads**: Deletes the downloaded files after program execution. <br>
+**cleanupArchives**: Deletes the archived files after program exectuion. <br>
+**cleanupOnFail**: Enables the cleanup function to run when the program fails to finish.
 
 
 # Manual mode
