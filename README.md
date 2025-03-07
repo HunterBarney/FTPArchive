@@ -73,7 +73,7 @@ Example profile:
     ],
     "bcc": [
       ""
-    ]
+    ],
     "cleanupDownloads": true,
     "cleanupArchives": true,
     "cleanupOnFail": true

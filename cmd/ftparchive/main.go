@@ -17,7 +17,7 @@ import (
 )
 
 func main() {
-	ProgramVersion := "0.4.0 - Beta"
+	ProgramVersion := "1.0.0 - Release"
 
 	profilePath := flag.String("profile", "profile.json", "The path to the profile.")
 	manualDownload := flag.Bool("download", false, "Runs only the download function, unless another function is explicitly passed as argument")
